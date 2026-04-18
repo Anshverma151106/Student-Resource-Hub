@@ -1,0 +1,43 @@
+:root {
+    /* Color Palette */
+    --primary: #6366f1;       /* Indigo */
+    --primary-hover: #4f46e5;
+    --primary-light: rgba(99, 102, 241, 0.1);
+    
+    --bg-main: #09090b;       /* Deep slate/black */
+    --bg-secondary: #18181b;
+    --bg-card: rgba(24, 24, 27, 0.6);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #a1a1aa;
+    
+    --border-color: rgba(255, 255, 255, 0.08);
+    
+    /* System Feedback */
+    --success: #10b981;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    
+    /* Layout & Spacing */
+    --container-max-width: 1200px;
+    --spacing-1: 8px;
+    --spacing-2: 16px;
+    --spacing-3: 24px;
+    --spacing-4: 32px;
+    --spacing-5: 48px;
+    
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    
+    /* Shadows & Elevation */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+    
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}

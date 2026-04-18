@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Note - Student Resource Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Student Resource Hub</h1>
+            <nav id="main-nav"></nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="public-note-container" class="public-note-card">
+            <div class="loader">Loading...</div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const shareId = params.get('shareId');
+            const container = document.getElementById('public-note-container');
+
+            if (!shareId) {
+                container.innerHTML = '<p>No note ID provided</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/notes/public/${shareId}`);
+                const note = await response.json();
+                
+                if (response.ok) {
+                    container.innerHTML = `
+                        <div class="public-header">
+                            <h2>${note.title}</h2>
+                            <p>${note.subject} • By ${note.username}</p>
+                        </div>
+                        <div class="public-actions">
+                            <a href="${note.downloadUrl}" class="btn" target="_blank" onclick="trackDownload('${note._id}')">Download Now</a>
+                            <p class="mt-4 text-muted">${note.downloads} downloads • ${note.views} views</p>
+                        </div>
+                        <div class="public-preview mt-8">
+                            <iframe src="${note.downloadUrl}" class="preview-pdf"></iframe>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `<p>${note.error}</p>`;
+                }
+            } catch (err) {
+                container.innerHTML = '<p>Error connecting to server</p>';
+            }
+        });
+
+        async function trackDownload(noteId) {
+            await fetch(`${API_BASE}/api/notes/${noteId}/track-download`, { method: 'POST' });
+        }
+    </script>
+</body>
+</html>

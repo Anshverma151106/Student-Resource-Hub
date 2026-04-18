@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Contributors - Student Resource Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Student Resource Hub</h1>
+            <nav id="main-nav"></nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <h2 class="text-center mb-8">🏆 Top Contributors</h2>
+        <div class="leaderboard-grid" id="leaderboard-container">
+            <div class="loader">Loading...</div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('leaderboard-container');
+            try {
+                const response = await fetch(`${API_BASE}/api/notes/leaderboard`);
+                let contributors = await response.json();
+                
+                // Fallback in case the server still returns an empty array (not restarted)
+                if (!contributors || contributors.length === 0) {
+                    const allRes = await fetch(`${API_BASE}/api/notes`);
+                    const allNotes = await allRes.json();
+                    
+                    const userStats = {};
+                    allNotes.forEach(n => {
+                        const u = n.username;
+                        if (!userStats[u]) {
+                            userStats[u] = {
+                                username: u,
+                                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(u)}&background=random`,
+                                stats: { totalUploads: 0, totalLikesReceived: 0 }
+                            };
+                        }
+                        userStats[u].stats.totalUploads += 1;
+                        userStats[u].stats.totalLikesReceived += (n.likes || 0);
+                    });
+                    
+                    contributors = Object.values(userStats)
+                        .sort((a, b) => b.stats.totalLikesReceived - a.stats.totalLikesReceived || b.stats.totalUploads - a.stats.totalUploads)
+                        .slice(0, 10);
+                }
+                
+                container.innerHTML = contributors.map((user, index) => {
+                    const rank = index + 1;
+                    const badge = rank === 1 ? '🥇 Top Contributor' : (rank <= 3 ? '⭐ Rising Star' : '');
+                    return `
+                        <div class="contributor-card rank-${rank}">
+                            <div class="rank-badge">${rank}</div>
+                            <img src="${user.avatar}" alt="${user.username}">
+                            <div class="info">
+                                <h4>${user.username}</h4>
+                                <p>${user.stats.totalUploads} uploads • ${user.stats.totalLikesReceived} likes</p>
+                                ${badge ? `<span class="badge">${badge}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = '<p>Error loading leaderboard</p>';
+            }
+        });
+    </script>
+</body>
+</html>

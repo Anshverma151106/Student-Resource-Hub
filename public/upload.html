@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Note - Student Resource Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Student Resource Hub</h1>
+            <nav id="main-nav">
+                <!-- Navigation will be updated by script.js -->
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="upload-container" style="display: none;">
+            <h2 class="text-center mb-8">Upload a New Note</h2>
+            <form id="upload-form" class="upload-form">
+                <div class="form-group">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" required placeholder="Enter note title">
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject:</label>
+                    <select id="subject" name="subject" required>
+                        <option value="" disabled selected>Select a subject</option>
+                        <option value="Math">Math</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                        <option value="History">History</option>
+                        <option value="Literature">Literature</option>
+                        <option value="Economics">Economics</option>
+                        <option value="Art">Art</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>File (PDF/Image):</label>
+                    <div id="drag-drop-zone" class="upload-dropzone">
+                        <div class="icon" style="font-size: 2.5rem; margin-bottom: 8px;">📁</div>
+                        <p id="drag-drop-text">Drag & drop your file here, or click to browse</p>
+                        <input type="file" id="file" name="file" accept=".pdf, .png, .jpg, .jpeg" required style="display: none;">
+                        <p id="file-name-display" style="margin-top: 12px; font-weight: 600; color: var(--primary);"></p>
+                    </div>
+                </div>
+                <button type="submit" class="btn w-full animate-fade-up">🚀 Upload Note</button>
+            </form>
+            <div id="upload-status" class="status-message"></div>
+        </div>
+        <div id="login-warning" class="status-message info" style="display: none;">
+            Please <a href="login.html">login</a> to upload notes.
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Student Resource Hub</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Check if user is logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+        
+        const uploadContainer = document.getElementById('upload-container');
+        uploadContainer.style.display = 'block';
+
+        const uploadForm = document.getElementById('upload-form');
+        const uploadStatus = document.getElementById('upload-status');
+        
+        // Drag and Drop Logic
+        const dropZone = document.getElementById('drag-drop-zone');
+        const fileInput = document.getElementById('file');
+        const fileNameDisplay = document.getElementById('file-name-display');
+
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateFileNameDisplay();
+                }
+            });
+
+            fileInput.addEventListener('change', updateFileNameDisplay);
+
+            function updateFileNameDisplay() {
+                if (fileInput.files.length > 0) {
+                    fileNameDisplay.textContent = `Selected: ${fileInput.files[0].name}`;
+                } else {
+                    fileNameDisplay.textContent = '';
+                }
+            }
+        }
+
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                uploadStatus.textContent = 'Uploading...';
+                uploadStatus.className = 'status-message info';
+
+                const formData = new FormData(uploadForm);
+                if (currentUser) {
+                    formData.append('username', currentUser);
+                    const currentNickname = localStorage.getItem('currentNickname');
+                    if (currentNickname) {
+                        formData.append('nickname', currentNickname);
+                    }
+                } else {
+                    uploadStatus.textContent = 'Error: You must be logged in to upload.';
+                    uploadStatus.className = 'status-message error';
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`${API_BASE}/api/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        uploadStatus.textContent = 'Upload successful! Redirecting...';
+                        uploadStatus.className = 'status-message success';
+                        uploadForm.reset();
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        uploadStatus.textContent = `Error: ${result.error || 'Failed to upload'}`;
+                        uploadStatus.className = 'status-message error';
+                    }
+                } catch (error) {
+                    console.error('Error during upload:', error);
+                    uploadStatus.textContent = 'Error: Something went wrong.';
+                    uploadStatus.className = 'status-message error';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

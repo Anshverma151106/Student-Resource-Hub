@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Student Resource Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Admin</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html">📊 Dashboard</a>
+            <a href="admin.html" class="active">🛡️ User Management</a>
+            <a href="index.html">🏠 Home</a>
+            <a href="#" id="logout-sidebar">🚪 Logout</a>
+        </nav>
+    </div>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <h1>🛡️ Platform Administration</h1>
+        </header>
+
+        <section class="card">
+            <h3>Registered Users</h3>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Uploads</th>
+                            <th>Likes</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const currentUser = localStorage.getItem('currentUser');
+            // Basic check - server will also verify
+            loadUsers();
+        });
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/notes/admin/users`);
+                const users = await response.json();
+                
+                const tbody = document.getElementById('users-table-body');
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="${u.avatar}" class="avatar-sm">
+                                <span>${u.username}</span>
+                            </div>
+                        </td>
+                        <td><span class="role-badge ${u.role}">${u.role}</span></td>
+                        <td>${u.stats.totalUploads}</td>
+                        <td>${u.stats.totalLikesReceived}</td>
+                        <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

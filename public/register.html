@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Student Resource Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Student Resource Hub</h1>
+            <nav id="main-nav">
+                <!-- Navigation will be updated by script.js -->
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="auth-container">
+            <h2 class="text-center mb-8">Register</h2>
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="nickname">Nickname (Optional):</label>
+                    <input type="text" id="nickname" name="nickname" placeholder="e.g. John">
+                </div>
+                <div class="form-group">
+                    <label for="username">Email/Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn w-full">Register</button>
+            </form>
+            <p>Already have an account? <a href="login.html">Login here</a></p>
+            <div id="auth-status" class="status-message"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Student Resource Hub</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <!-- Import Firebase Client SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script>
+        // Replace with YOUR Firebase config from Firebase Console
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-app.firebaseapp.com",
+            projectId: "your-app",
+            storageBucket: "your-app.appspot.com",
+            messagingSenderId: "your-id",
+            appId: "your-app-id"
+        };
+
+        let useFirebase = false;
+        
+        // Detect if Firebase is properly configured
+        if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "your-api-key") {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                useFirebase = true;
+                console.log("✅ Firebase Auth enabled");
+            } catch (err) {
+                console.error("❌ Firebase init failed:", err.message);
+            }
+        } else {
+            console.warn("⚠️ Firebase not configured. Using local authentication.");
+        }
+
+        const registerForm = document.getElementById('register-form');
+        const authStatus = document.getElementById('auth-status');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nickname = document.getElementById('nickname').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            authStatus.textContent = 'Registering...';
+            authStatus.className = 'status-message info';
+
+            if (useFirebase) {
+                try {
+                    await firebase.auth().createUserWithEmailAndPassword(username, password);
+                    authStatus.textContent = 'Registration successful! Redirecting to login...';
+                    authStatus.className = 'status-message success';
+                    setTimeout(() => window.location.href = 'login.html', 1500);
+                } catch (error) {
+                    console.error('Firebase Registration error:', error);
+                    authStatus.textContent = error.message;
+                    authStatus.className = 'status-message error';
+                }
+            } else {
+                // Local Auth Fallback
+                try {
+                    const response = await fetch(`${API_BASE}/api/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password, nickname })
+                    });
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        authStatus.textContent = 'Registration successful! Redirecting to login...';
+                        authStatus.className = 'status-message success';
+                        setTimeout(() => window.location.href = 'login.html', 1500);
+                    } else {
+                        authStatus.textContent = data.error || 'Registration failed';
+                        authStatus.className = 'status-message error';
+                    }
+                } catch (error) {
+                    console.error('Local Registration error:', error);
+                    authStatus.innerHTML = `Error connecting to server. <br><small>Tip: Make sure the server is running and try opening <a href="http://localhost:3000/register.html">http://localhost:3000/register.html</a></small>`;
+                    authStatus.className = 'status-message error';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

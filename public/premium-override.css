@@ -1,0 +1,144 @@
+/* --- PREMIUM UI OVERRIDE OVERHAUL --- */
+:root {
+    --primary-color: #8b5cf6 !important;
+    --primary-hover: #7c3aed !important;
+    --secondary-color: #1e1b4b !important;
+    --bg-color: #0f172a !important;
+    --bg-main: #0f172a !important;
+    --card-bg: rgba(30, 41, 59, 0.6) !important;
+    --text-main: #f8fafc !important;
+    --text-muted: #cbd5e1 !important;
+    --border-color: rgba(148, 163, 184, 0.2) !important;
+    --sidebar-bg: rgba(15, 23, 42, 0.8) !important;
+    --radius: 16px !important;
+    --radius-lg: 16px !important;
+    --radius-md: 12px !important;
+}
+
+body, .dashboard-body {
+    background: radial-gradient(circle at top right, #312e81, #0f172a, #000000) !important;
+    color: var(--text-main) !important;
+    background-attachment: fixed !important;
+    min-height: 100vh;
+}
+
+/* Glassmorphism Classes */
+header, .subject-card, .note-card, .auth-container, .upload-form, .sidebar, .card, .stat-card, .dashboard-header, .chatbot-window {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    color: var(--text-main) !important;
+}
+
+header h1, h2:not(.sidebar-header h2), h3, h4, .hero h2 {
+    color: #e2e8f0 !important;
+    background: -webkit-linear-gradient(45deg, #c084fc, #f472b6) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    text-shadow: 0 4px 20px rgba(167, 139, 250, 0.2);
+}
+
+.hero p, .note-card p, .sidebar-nav a {
+    color: var(--text-muted) !important;
+}
+
+/* Glowing modern buttons */
+.btn, .sidebar-nav a.active, .chatbot-send, .chatbot-toggle {
+    background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(217, 70, 239, 0.4) !important;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.btn:hover, .sidebar-nav a.active:hover, .chatbot-send:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(217, 70, 239, 0.6) !important;
+}
+
+/* Special Button variants */
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%) !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* Form Styles */
+input, select {
+    background: rgba(15, 23, 42, 0.7) !important;
+    color: white !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    border-radius: var(--radius-md) !important;
+}
+
+input:focus, select:focus {
+    border-color: #c084fc !important;
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2) !important;
+}
+
+/* Moving animation blob background */
+body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -10%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: blobMove 25s infinite alternate ease-in-out;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    right: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: blobMove2 20s infinite alternate ease-in-out;
+}
+
+@keyframes blobMove {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(25%, 15%) scale(1.2); }
+}
+
+@keyframes blobMove2 {
+    0% { transform: translate(0, 0) scale(1.1); }
+    100% { transform: translate(-20%, -20%) scale(0.9); }
+}
+
+/* Adjustments for specific elements */
+.stat-card, .subject-card {
+   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.stat-card:hover, .subject-card:hover {
+   transform: translateY(-8px) !important;
+   border-color: rgba(192, 132, 252, 0.5) !important;
+   box-shadow: 0 15px 30px rgba(0,0,0,0.4) !important;
+}
+
+.item, .activity-item, .note-item-dash {
+    border-bottom-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+a {
+    color: #c084fc;
+}
+a:hover {
+    color: #f472b6;
+}
+
+.user-greeting {
+    background: rgba(30, 41, 59, 0.6) !important;
+    border-color: var(--border-color) !important;
+    color: white !important;
+}

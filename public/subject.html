@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Notes - Student Resource Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Student Resource Hub</h1>
+            <nav id="main-nav">
+                <!-- Navigation will be updated by script.js -->
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="search-container" style="display: flex; gap: 16px; align-items: center;">
+            <div style="position: relative; flex: 1;">
+                <span style="position: absolute; left: 16px; top: 18px; color: var(--text-secondary);">🔍</span>
+                <input type="text" id="search-input" class="search-input" placeholder="Search by title or topic..." style="padding-left: 48px;">
+            </div>
+            <select id="sort-select" style="width: auto; padding: 16px; border-radius: var(--radius-xl); background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); margin: 0; outline: none; cursor: pointer;">
+                <option value="latest">Sort: Latest</option>
+                <option value="likes">Sort: Most Liked</option>
+            </select>
+        </div>
+
+        <h2 id="subject-title" class="text-center mb-8">Subject Notes</h2>
+        <div id="notes-container" class="notes-grid">
+            <!-- Notes will be loaded here dynamically -->
+            <p>Loading notes...</p>
+        </div>
+    </main>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Document Preview</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div id="modal-body" class="modal-body">
+                <!-- Content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Student Resource Hub</p>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Specific logic for subject page
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const subject = params.get('subject') || '';
+            const searchInput = document.getElementById('search-input');
+            const sortSelect = document.getElementById('sort-select');
+
+            if (subject) {
+                document.getElementById('subject-title').innerText = `${subject} Notes`;
+            }
+
+            // Initial load
+            loadNotes(subject);
+
+            // Listen for search and sort changes with debounce for instant but stable feedback
+            let debounceTimer;
+            const updateResults = () => {
+                clearTimeout(debounceTimer);
+                // Highlight search bar visual active state
+                const container = document.getElementById('notes-container');
+                if (container) container.style.opacity = '0.5';
+                
+                debounceTimer = setTimeout(() => {
+                    loadNotes(subject, searchInput.value, sortSelect.value).finally(() => {
+                        if (container) container.style.opacity = '1';
+                    });
+                }, 300);
+            };
+
+            searchInput.addEventListener('input', updateResults);
+            sortSelect.addEventListener('change', () => loadNotes(subject, searchInput.value, sortSelect.value));
+        });
+    </script>
+</body>
+</html>

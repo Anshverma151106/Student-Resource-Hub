@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Student Resource Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dashboard-body dark-mode">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Hub</h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html">🏠 <span>Home</span></a>
+            <a href="dashboard.html" class="active">📊 <span>Dashboard</span></a>
+            <a href="subject.html">📚 <span>Browse</span></a>
+            <a href="upload.html">📤 <span>Upload</span></a>
+            <a href="leaderboard.html">🏆 <span>Leaderboard</span></a>
+            <a href="#" id="logout-sidebar">🚪 <span>Logout</span></a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-main">
+        <header class="dashboard-header">
+            <div class="user-profile-brief">
+                <img id="user-avatar" src="https://ui-avatars.com/api/?name=User" alt="Avatar">
+                <div>
+                    <h1 id="welcome-msg">Dashboard</h1>
+                    <p id="user-role-badge" class="role-badge">USER</p>
+                </div>
+            </div>
+            <div class="header-actions" style="display: flex; gap: 12px; align-items: center;">
+                <div class="notification-wrapper">
+                    <button id="notif-toggle" class="btn-icon" title="Notifications">
+                        <span class="icon">🔔</span>
+                        <span id="notif-count" class="badge">0</span>
+                    </button>
+                    <div id="notif-dropdown" class="notif-dropdown">
+                        <!-- Notifications here -->
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h3>Total Uploads</h3>
+                    <span style="font-size: 1.25rem;">📤</span>
+                </div>
+                <p id="stat-uploads">0</p>
+            </div>
+            <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h3>Likes Received</h3>
+                    <span style="font-size: 1.25rem;">👍</span>
+                </div>
+                <p id="stat-likes">0</p>
+            </div>
+            <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h3>Dislikes Received</h3>
+                    <span style="font-size: 1.25rem;">👎</span>
+                </div>
+                <p id="stat-dislikes">0</p>
+            </div>
+            <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h3>Total Downloads</h3>
+                    <span style="font-size: 1.25rem;">📥</span>
+                </div>
+                <p id="stat-downloads">0</p>
+            </div>
+        </section>
+
+        <section class="dashboard-content">
+            <div class="card">
+                <h3><span>📚</span> My Uploaded Notes</h3>
+                <div id="my-notes-container" class="notes-list-simple">
+                    <!-- Notes will be loaded here -->
+                </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 24px; height: 100%; min-height: 0;">
+                <div class="card" style="flex: 1;">
+                    <h3><span>📈</span> Analytics Overview</h3>
+                    <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="analytics-chart" style="max-height: 100%; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+                <div class="card" style="flex: 1;">
+                    <h3><span>⚡</span> Recent Activity</h3>
+                    <div id="activity-list" class="activity-list">
+                        <!-- Activity items here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Edit Note Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Note</h3>
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" id="edit-title">
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <select id="edit-subject">
+                    <option value="Math">Math</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="History">History</option>
+                    <option value="Literature">Literature</option>
+                    <option value="Economics">Economics</option>
+                    <option value="Art">Art</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                <button class="btn btn-primary" id="save-edit-btn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Use API_BASE from script.js (already declared globally)
+        console.log('Dashboard Script Initializing...');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const currentUser = localStorage.getItem('currentUser');
+            console.log('Dashboard: Current User from Storage:', currentUser);
+            
+            if (!currentUser || currentUser === 'null' || currentUser === 'undefined') {
+                console.error('Dashboard: Invalid user session, redirecting...');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Set name immediately in header
+            const welcomeMsg = document.getElementById('welcome-msg');
+            if (welcomeMsg) welcomeMsg.innerText = currentUser.split('@')[0]; // Show name part of email
+
+            try {
+                await loadDashboard(currentUser);
+                initDashboardUI();
+            } catch (err) {
+                console.error('Dashboard Init Error:', err);
+            }
+        });
+
+        async function loadDashboard(username) {
+            console.log('Dashboard: Fetching data for:', username);
+            
+            try {
+                // Ensure the URL is absolutely correct and bypass cache
+                const url = `${API_BASE}/api/notes/dashboard/${encodeURIComponent(username)}?nocache=${Date.now()}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Dashboard: Full Data Received:', data);
+                
+                // 1. Update Profile Info
+                const welcomeMsg = document.getElementById('welcome-msg');
+                const userAvatar = document.getElementById('user-avatar');
+                const roleBadge = document.getElementById('user-role-badge');
+
+                if (welcomeMsg) welcomeMsg.innerText = username; 
+                if (userAvatar) {
+                    userAvatar.src = data.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random`;
+                }
+                if (roleBadge) {
+                    roleBadge.innerText = (data.user.role || 'user').toUpperCase();
+                    if (data.user.role === 'admin') roleBadge.classList.add('admin');
+                }
+
+                // 2. Update Stats with animation or safety
+                const stats = data.stats || { totalUploads: 0, totalLikesReceived: 0, totalDislikesReceived: 0, totalDownloads: 0 };
+                document.getElementById('stat-uploads').innerText = stats.totalUploads;
+                document.getElementById('stat-likes').innerText = stats.totalLikesReceived;
+                document.getElementById('stat-dislikes').innerText = stats.totalDislikesReceived || 0;
+                document.getElementById('stat-downloads').innerText = stats.totalDownloads;
+
+                // 3. Render Content Lists
+                renderNotes(data.notes || []);
+                renderActivity(data.notes || []);
+                
+                // 4. Chart & Notifications
+                if (window.Chart) renderChart(stats);
+                loadNotifications(username);
+
+            } catch (err) {
+                console.error('Dashboard: Fetch error details:', err);
+                // Don't alert to avoid annoying the user, just log
+            }
+        }
+
+        function renderActivity(notes) {
+            const container = document.getElementById('activity-list');
+            if (!container) return;
+
+            // Sort notes by date to show real activity
+            const sortedNotes = [...notes].sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+            const recent = sortedNotes.slice(0, 8); 
+            
+            container.innerHTML = recent.length ? '' : '<p style="padding:15px; color:#64748b; font-size:0.8rem;">No recent activity found.</p>';
+            
+            recent.forEach(note => {
+                const div = document.createElement('div');
+                div.className = 'activity-item';
+                div.style.cssText = "padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem;";
+                div.innerHTML = `
+                    <strong>Uploaded:</strong> ${note.title}
+                    <div style="color: #94a3b8; font-size: 0.7rem;">${new Date(note.uploadDate).toLocaleDateString()}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderNotes(notes) {
+            const container = document.getElementById('my-notes-container');
+            if (!container) return;
+            
+            container.innerHTML = notes.length ? '' : '<p style="padding: 20px; color: #64748b; font-size:0.85rem;">You haven\'t uploaded any notes yet.</p>';
+            
+            notes.forEach(note => {
+                const div = document.createElement('div');
+                div.className = 'note-item-dash';
+                div.innerHTML = `
+                    <div class="note-info">
+                        <strong>${note.title}</strong>
+                        <span>${note.subject} • ${note.likes || 0} 👍 • ${note.dislikes || 0} 👎 • ${note.downloads || 0} 📥</span>
+                    </div>
+                    <div class="note-actions">
+                        <button class="btn-sm" onclick="copyShareLink('${note.shareId}')">🔗 Link</button>
+                        <button class="btn-sm" onclick="openEditModal('${note._id || note.id}', '${note.title.replace(/'/g, "\\'")}', '${note.subject}')">✏️</button>
+                        <button class="btn-sm btn-danger" style="background:#fee2e2; color:#ef4444; border:none;" onclick="deleteNote('${note._id || note.id}', this)">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        let currentEditId = null;
+
+        function openEditModal(id, title, subject) {
+            currentEditId = id;
+            document.getElementById('edit-title').value = title;
+            document.getElementById('edit-subject').value = subject;
+            document.getElementById('edit-modal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('show');
+            currentEditId = null;
+        }
+
+        document.getElementById('save-edit-btn').onclick = async () => {
+            if (!currentEditId) return;
+            const title = document.getElementById('edit-title').value.trim();
+            const subject = document.getElementById('edit-subject').value;
+            const username = localStorage.getItem('currentUser');
+
+            if (!title) return alert('Title cannot be empty');
+
+            try {
+                const response = await fetch(`${API_BASE}/api/notes/${currentEditId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, subject, username })
+                });
+
+                if (response.ok) {
+                    closeEditModal();
+                    loadDashboard(username);
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to update note');
+                }
+            } catch (err) {
+                console.error('Update error:', err);
+            }
+        };
+
+        function renderChart(stats) {
+            const ctx = document.getElementById('analytics-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Uploads', 'Likes', 'Downloads'],
+                    datasets: [{
+                        data: [stats.totalUploads, stats.totalLikesReceived, stats.totalDownloads],
+                        backgroundColor: ['#4f46e5', '#ec4899', '#10b981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        async function loadNotifications(username) {
+            const response = await fetch(`${API_BASE}/api/notes/notifications/${encodeURIComponent(username)}`);
+            const notifications = await response.json();
+            const count = notifications.filter(n => !n.read).length;
+            const badge = document.getElementById('notif-count');
+            badge.innerText = count;
+            badge.style.display = count > 0 ? 'block' : 'none';
+
+            const dropdown = document.getElementById('notif-dropdown');
+            dropdown.innerHTML = notifications.length ? '' : '<p class="p-4 text-center">No notifications</p>';
+            notifications.slice(0, 5).forEach(n => {
+                const div = document.createElement('div');
+                div.className = `notif-item ${n.read ? 'read' : 'unread'}`;
+                div.innerHTML = `
+                    <p>${n.message}</p>
+                    <small>${new Date(n.createdAt).toLocaleDateString()}</small>
+                `;
+                dropdown.appendChild(div);
+            });
+        }
+
+        function initDashboardUI() {
+            document.getElementById('notif-toggle').onclick = (e) => {
+                e.stopPropagation();
+                const dropdown = document.getElementById('notif-dropdown');
+                dropdown.classList.toggle('show');
+                if (dropdown.classList.contains('show')) {
+                    markNotificationsRead();
+                }
+            };
+
+            document.getElementById('logout-sidebar').onclick = (e) => {
+                e.preventDefault();
+                localStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            };
+
+            window.onclick = () => {
+                document.getElementById('notif-dropdown').classList.remove('show');
+            };
+        }
+
+        async function markNotificationsRead() {
+            const username = localStorage.getItem('currentUser');
+            await fetch(`${API_BASE}/api/notes/notifications/${encodeURIComponent(username)}/read`, { method: 'POST' });
+            setTimeout(() => document.getElementById('notif-count').style.display = 'none', 1000);
+        }
+
+        function copyShareLink(shareId) {
+            const url = `${window.location.origin}/public-view.html?shareId=${shareId}`;
+            navigator.clipboard.writeText(url);
+            if (typeof showToast === 'function') {
+                showToast('Share link copied to clipboard!', 'success');
+            } else {
+                alert('Share link copied to clipboard!');
+            }
+        }
+    </script>
+</body>
+</html>

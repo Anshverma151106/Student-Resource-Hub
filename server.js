@@ -14,7 +14,7 @@ const User = require('./models/User');
 const noteController = require('./controllers/noteController');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const USERS_FILE = 'users.json';
 const NOTES_FILE = 'notes.json';
@@ -240,6 +240,11 @@ app.post('/api/upload', (req, res) => {
             res.status(500).json({ error: 'Failed to process note' });
         }
     });
+});
+
+// Example API
+app.get("/api/test", (req, res) => {
+  res.json({ message: "Backend working!" });
 });
 
 app.listen(PORT, () => {
